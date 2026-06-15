@@ -67,6 +67,7 @@ contextBridge.exposeInMainWorld('ghost', {
 
   // Fullscreen
   toggleFullscreen: () => ipcRenderer.send('toggle-fullscreen'),
+  onFullscreenChange: (cb) => ipcRenderer.on('fs-change', (e, d) => cb(d)),
 
   // Home
   goHome: () => ipcRenderer.send('go-home'),
@@ -74,6 +75,21 @@ contextBridge.exposeInMainWorld('ghost', {
   // Idle
   resetIdleTimer: () => ipcRenderer.send('reset-idle'),
 
+  // Split View
+  enterSplit: (wsId) => ipcRenderer.invoke('enter-split', wsId),
+  exitSplit: () => ipcRenderer.invoke('exit-split'),
+  focusSplitPane: (side) => ipcRenderer.invoke('focus-split-pane', side),
+  onSplitChanged: (cb) => ipcRenderer.on('split-changed', (e, d) => cb(d)),
+
+  // Downloads
+  getDownloads: () => ipcRenderer.invoke('get-downloads'),
+  getDownloadsHistory: () => ipcRenderer.invoke('get-downloads-history'),
+  onDownloadProgress: (cb) => ipcRenderer.on('download-progress', (e, d) => cb(d)),
+  onToggleDownloads: (cb) => ipcRenderer.on('toggle-downloads', () => cb()),
+  toggleDownloads: () => ipcRenderer.send('toggle-downloads'),
+  openDownloadFolder: (savePath) => ipcRenderer.invoke('open-download-folder', savePath),
+
   // Emergency
   loginGuest: () => ipcRenderer.invoke('login-guest'),
+  quitApp: () => ipcRenderer.send('quit-app'),
 });

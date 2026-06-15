@@ -1,11 +1,11 @@
 {
-  "name": "ghostview",
+  "name": "aegis",
   "version": "1.0.0",
-  "description": "Zero-tracking, zero-storage privacy browser",
+  "description": "Privacy-focused browser with per-user workspaces",
   "main": "main.js",
   "build": {
-    "appId": "com.ghostview.browser",
-    "productName": "GhostView",
+    "appId": "com.aegis.browser",
+    "productName": "AEGIS",
     "win": {
       "target": ["portable", "nsis"],
       "icon": "logo.ico",
@@ -13,17 +13,17 @@
       "signAndEditExecutable": false
     },
     "portable": {
-      "artifactName": "GhostView-${version}.exe",
+      "artifactName": "AEGIS-${version}.exe",
       "requestExecutionLevel": "user"
     },
     "nsis": {
-      "artifactName": "GhostView-${version}-setup.exe",
+      "artifactName": "AEGIS-${version}-setup.exe",
       "oneClick": false,
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
       "installerIcon": "logo.ico",
-      "uninstallDisplayName": "GhostView Browser"
+      "uninstallDisplayName": "AEGIS Browser"
     },
     "directories": {
       "output": "dist"
@@ -31,9 +31,10 @@
   },
   "scripts": {
     "start": "electron .",
-    "pack": "electron-packager . GhostView --platform=win32 --arch=x64 --icon=logo.ico --out=dist --overwrite",
+    "pack": "electron-packager . AEGIS --platform=win32 --arch=x64 --icon=logo.ico --out=dist --overwrite",
     "portable": "electron-builder --win portable",
     "installer": "electron-builder --win nsis",
+    "create-logo": "node create-logo.js",
     "clean": "Remove-Item -Recurse -Force dist -ErrorAction SilentlyContinue"
   },
   "devDependencies": {

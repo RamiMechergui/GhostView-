@@ -44,6 +44,14 @@ body{display:flex;flex-direction:column}
 #bm-btn.bmd:hover{color:#f6e05e}
 #bm-btn:hover{color:#a0aec0}
 #find{display:none;align-items:center;gap:6px;padding:4px 10px;height:30px;background:rgba(10,10,30,0.85);border-bottom:1px solid rgba(15,52,96,0.3);flex-shrink:0;backdrop-filter:blur(4px)}
+#split-bar{display:none;align-items:center;justify-content:center;gap:12px;height:26px;background:rgba(15,15,30,0.9);border-bottom:1px solid rgba(15,52,96,0.3);flex-shrink:0;font-size:11px;cursor:pointer}
+#split-bar.open{display:flex}
+#split-bar .spl-side{padding:2px 12px;border-radius:4px;color:#718096;transition:all .15s}
+#split-bar .spl-side:hover{background:rgba(66,153,225,0.08)}
+#split-bar .spl-side.focused{color:#63b3ed;background:rgba(66,153,225,0.12)}
+#split-bar .spl-sep{color:#3a4a5a;font-size:14px;font-weight:100}
+#split-bar #spl-exit{background:none;border:none;color:#5a6a7a;cursor:pointer;font-size:12px;padding:2px 6px;border-radius:3px;position:absolute;right:14px;transition:all .12s}
+#split-bar #spl-exit:hover{color:#fc8181;background:rgba(252,129,129,0.1)}
 #find.open{display:flex}
 #find input{flex:1;background:rgba(10,41,80,0.5);border:1px solid rgba(26,54,93,0.4);border-radius:5px;padding:3px 10px;color:#e2e8f0;font-size:12px;outline:none;height:22px}
 #find input:focus{border-color:rgba(66,153,225,0.3)}
@@ -76,6 +84,7 @@ body{display:flex;flex-direction:column}
 
 /* Status */
 #status{display:flex;align-items:center;justify-content:space-between;height:24px;background:rgba(10,10,20,0.8);padding:0 14px;font-size:10.5px;color:#4a5568;border-top:1px solid rgba(15,52,96,0.3);flex-shrink:0;backdrop-filter:blur(4px)}
+body.fs #find,body.fs #status,body.fs #split-bar{display:none}
 #su{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;direction:rtl;text-align:left;color:#3a4a5a}
 
 /* Panels */
@@ -160,7 +169,7 @@ body{display:flex;flex-direction:column}
       <circle cx="15" cy="10" r="1" fill="#63b3ed" stroke="none"/>
       <path d="M9 14c.5.5 1.5 1 3 1s2.5-.5 3-1" stroke-width="1.2"/>
     </svg>
-    <span>GhostView</span>
+    <span>AEGIS</span>
   </div>
   <button id="back">&#9664;</button>
   <button id="fwd">&#9654;</button>
@@ -171,12 +180,15 @@ body{display:flex;flex-direction:column}
   <button class="ib" id="bm-btn" title="Bookmark this page">&#9734;</button>
   <span id="user-label"></span>
   <div id="ws-btn">&#9632; <span id="ws-name">Default</span> &#9662;<div id="ws-dd"></div></div>
+
   <span id="badge">Ghost Mode</span>
   <button class="ib" id="hb" title="History (Ctrl+H)">&#128214;</button>
+  <button class="ib" id="dl-btn" title="Downloads (Ctrl+J)">&#11015;</button>
   <button class="ib" id="sb" title="Settings">&#9881;</button>
 </div>
 <div id="tabs"><button id="nt">+</button></div>
 <div id="find"><input id="fi" placeholder="Find in page" spellcheck="false"><span class="fc" id="fcount"></span><button id="fp">&#9664;</button><button id="fn">&#9654;</button><button id="fc" class="fcx">&#x2715;</button></div>
+<div id="split-bar"><span class="spl-side focused" id="spl-left" data-side="left">Left</span><span class="spl-sep">|</span><span class="spl-side" id="spl-right" data-side="right">Right</span><button id="spl-exit">&#x2715;</button></div>
 <div class="area">
 
   <!-- History Panel -->
@@ -197,13 +209,19 @@ body{display:flex;flex-direction:column}
     </div>
   </div>
 
+  <!-- Downloads Panel -->
+  <div class="panel" id="dlp">
+    <div class="phdr"><h3>Downloads</h3><button id="cdl">&#x2715;</button></div>
+    <div class="pbody" id="dll"></div>
+  </div>
+
   <!-- Settings Panel -->
   <div class="panel" id="sp">
     <div class="phdr"><h3>Settings</h3><button id="cs">&#x2715;</button></div>
     <div class="pbody">
       <div class="sc">
         <h4>Profile Photo</h4>
-        <div class="sd">Personalize your GhostView profile</div>
+        <div class="sd">Personalize your AEGIS profile</div>
         <div class="spho">
           <div class="sring"><div class="sin"><div class="sp" id="sph">&#128100;</div><img id="simg" style="display:none"></div></div>
           <div class="sact">
@@ -232,7 +250,7 @@ body{display:flex;flex-direction:column}
   </div>
 
 </div>
-<div id="status"><span id="st">Ghost Mode Active</span><span style="display:flex;align-items:center;gap:8px"><span id="zoom-lbl" title="Reset zoom (Ctrl+0)">100%</span><span id="su"></span></span></div>
+<div id="status"><span id="st">AEGIS — Private Mode</span><span style="display:flex;align-items:center;gap:8px"><span id="zoom-lbl" title="Reset zoom (Ctrl+0)">100%</span><span id="su"></span></span></div>
 
 <script>
 const g = window.ghost;
@@ -488,13 +506,114 @@ document.addEventListener('keydown', (e) => {
   if (e.ctrlKey && (e.key === '=' || e.key === '+')) { e.preventDefault(); zoomLevel = Math.min(10, zoomLevel + 1); updateZoom(); g.zoomIn(); }
   if (e.ctrlKey && e.key === '-') { e.preventDefault(); zoomLevel = Math.max(-5, zoomLevel - 1); updateZoom(); g.zoomOut(); }
   if ((e.ctrlKey && e.key === '0') || e.key === 'Escape') { if (e.key === 'Escape') { closePanels(); hideGate(); if (findOpen) fc.click(); } else { e.preventDefault(); zoomLevel = 0; updateZoom(); g.zoomReset(); } }
-  if (e.key === 'F11') { e.preventDefault(); g.toggleFullscreen(); }
+  // F11 handled via before-input-event in main process
   if (e.ctrlKey && e.key === 'Tab') { e.preventDefault(); if (tlist.length > 1) { const idx = tlist.findIndex(t => t.id === active); const next = tlist[(idx + 1) % tlist.length]; g.activateTab(next.id); } }
+  if (e.ctrlKey && e.key === 'j') { e.preventDefault(); toggleDl(); }
   if (e.ctrlKey && e.key === 'd') { e.preventDefault(); bmBtn.click(); }
 });
 // Also handle F5 as reload
 document.addEventListener('keyup', (e) => { if (e.key === 'F5') e.preventDefault(); });
 window.addEventListener('resize', () => g.resizeContent());
+
+// ── Downloads ──
+const dlBtn = document.getElementById('dl-btn');
+const dlp = document.getElementById('dlp');
+const dll = document.getElementById('dll');
+const cdl = document.getElementById('cdl');
+let dlItems = [];
+
+dlBtn.onclick = () => { toggleDl(); };
+cdl.onclick = () => { dlp.classList.remove('open'); g.panelToggle(false); };
+
+function toggleDl() {
+  hp.classList.remove('open'); sp.classList.remove('open');
+  const o = dlp.classList.toggle('open'); g.panelToggle(o);
+  if (o) { loadDlHistory(); }
+}
+
+g.onDownloadProgress((d) => {
+  const i = dlItems.findIndex(x => x.id === d.id);
+  if (i >= 0) dlItems[i] = d;
+  else dlItems.unshift(d);
+  if (dlp.classList.contains('open')) renderDl();
+});
+
+g.onToggleDownloads(() => toggleDl());
+
+async function loadDlHistory() {
+  try {
+    const hist = await g.getDownloadsHistory();
+    const cur = dlItems.filter(d => !d.done);
+    dlItems = [...cur, ...hist.map(h => ({
+      id: 'hist_' + h.id, name: h.filename, total: h.total_bytes, received: h.received_bytes,
+      start: h.start_time, done: !!h.done, success: !!h.success, canceled: !!h.canceled,
+      url: h.url, savePath: h.save_path, speed: 0, isHistory: true,
+    }))];
+  } catch(e) {}
+  renderDl();
+}
+
+function renderDl() {
+  dll.innerHTML = '';
+  if (!dlItems.length) {
+    dll.innerHTML = '<div class="he"><div class="bi">&#11015;</div><div class="bt">No downloads yet</div><div class="bs">Downloads will appear here</div></div>';
+    return;
+  }
+  dlItems.forEach(d => {
+    const el = document.createElement('div'); el.className = 'hi';
+    const pct = d.total > 0 ? Math.round(d.received / d.total * 100) : 0;
+    let icon = '&#128190;', statusText = '';
+    if (!d.done) { icon = '&#8987;'; statusText = pct + '% - ' + formatBytes(d.speed) + '/s'; }
+    else if (d.success) { icon = '&#10003;'; statusText = 'Completed'; }
+    else if (d.canceled) { icon = '&#10007;'; statusText = 'Canceled'; }
+    else { icon = '&#9888;'; statusText = 'Failed'; }
+    el.innerHTML = '<div class="hic">' + icon + '</div>'
+      + '<div class="hb"><div class="ht">' + esc(d.name) + '</div>'
+      + '<div class="hu">' + formatBytes(d.received) + ' / ' + formatBytes(d.total) + ' &middot; ' + statusText + '</div>'
+      + '<div style="height:3px;background:rgba(255,255,255,0.06);border-radius:2px;margin-top:4px;overflow:hidden">'
+      + '<div style="height:100%;width:' + pct + '%;background:linear-gradient(90deg,#4299e1,#805ad5);border-radius:2px;transition:width .3s"></div></div></div>';
+    if (d.savePath) {
+      el.style.cursor = 'pointer';
+      el.title = 'Open file location';
+      el.onclick = () => { try { g.openDownloadFolder(d.savePath); } catch(e) {} };
+    }
+    dll.appendChild(el);
+  });
+}
+
+function formatBytes(b) {
+  if (!b || b <= 0) return '0 B';
+  const u = ['B','KB','MB','GB'];
+  let i = 0; let v = b;
+  while (v >= 1024 && i < u.length - 1) { v /= 1024; i++; }
+  return v.toFixed(i > 0 ? 1 : 0) + ' ' + u[i];
+}
+
+// ── Split View ──
+const splitBar = document.getElementById('split-bar');
+const splLeft = document.getElementById('spl-left');
+const splRight = document.getElementById('spl-right');
+const splExit = document.getElementById('spl-exit');
+let splitActive = false;
+
+splLeft.onclick = () => { if (splitActive) g.focusSplitPane('left'); };
+splRight.onclick = () => { if (splitActive) g.focusSplitPane('right'); };
+splExit.onclick = () => { g.exitSplit(); };
+
+g.onFullscreenChange((fs) => { document.body.classList.toggle('fs', fs); setTimeout(() => g.resizeContent(), 100); });
+
+g.onSplitChanged((d) => {
+  splitActive = d.active;
+  if (d.active) {
+    splitBar.classList.add('open');
+    splLeft.textContent = d.leftName || 'Left';
+    splRight.textContent = d.rightName || 'Right';
+    splLeft.classList.toggle('focused', d.focused === 'left');
+    splRight.classList.toggle('focused', d.focused === 'right');
+  } else {
+    splitBar.classList.remove('open');
+  }
+});
 
 // Workspace Switcher
 const wsBtn = document.getElementById('ws-btn');

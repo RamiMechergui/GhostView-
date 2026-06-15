@@ -41,8 +41,8 @@ input::placeholder{color:#4a5568}
       <path d="M9 14c.5.5 1.5 1 3 1s2.5-.5 3-1" stroke-width="1.2"/>
     </svg>
   </div>
-  <h1>GhostView</h1>
-  <div class="tagline">&#128274; Private browser with user profiles</div>
+  <h1>AEGIS</h1>
+  <div class="tagline">&#128737; Private browser with user profiles</div>
 
   <div id="login-form">
     <div class="input-group">
@@ -58,6 +58,7 @@ input::placeholder{color:#4a5568}
       <button class="btn btn-primary" id="login-btn">Sign In</button>
     </div>
     <button class="guest-btn" id="guest-btn">Login without password</button>
+    <button class="guest-btn" id="quit-btn" style="margin-top:8px;border-color:rgba(255,255,255,0.1);color:#718096;font-size:11.5px">Quit</button>
     <span class="toggle-link" id="show-register">Create a new account</span>
   </div>
 
@@ -110,6 +111,7 @@ document.getElementById('reg-btn').onclick = async () => {
   if (result.ok) { errEl.className = 'success'; errEl.textContent = 'Account created! You can now sign in.'; document.getElementById('login-pseudo').value = pseudo; setTimeout(showLogin, 1500); }
   else { errEl.textContent = result.error; }
 };
+document.getElementById('quit-btn').onclick = () => g.quitApp();
 document.getElementById('guest-btn').onclick = async () => {
   const errEl = document.getElementById('login-error');
   errEl.textContent = 'Wiping all data\u2026';
