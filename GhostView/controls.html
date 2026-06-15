@@ -18,6 +18,13 @@ body{display:flex;flex-direction:column}
 #url{flex:1;background:rgba(10,41,80,0.7);border:1px solid rgba(26,54,93,0.6);border-radius:10px;padding:7px 16px;color:#e2e8f0;font-size:13px;outline:none;height:34px;-webkit-app-region:no-drag;transition:border-color .2s,box-shadow .2s}
 #url:focus{border-color:rgba(66,153,225,0.5);box-shadow:0 0 0 3px rgba(66,153,225,0.08)}
 #url::placeholder{color:#4a5568}
+#url-wrap{position:relative;flex:1;display:flex}
+#suggest{display:none;position:absolute;top:calc(100% + 4px);left:0;right:0;background:linear-gradient(180deg,rgba(22,22,50,0.98),rgba(18,18,42,0.99));border:1px solid rgba(15,52,96,0.4);border-radius:10px;z-index:100;backdrop-filter:blur(12px);box-shadow:0 6px 24px rgba(0,0,0,0.3);overflow:hidden}
+#suggest.open{display:block}
+#suggest .si{padding:9px 14px;cursor:pointer;font-size:12px;color:#cbd5e0;display:flex;align-items:center;gap:10px;transition:all .1s;border-left:3px solid transparent}
+#suggest .si:hover,#suggest .si.sel{background:rgba(66,153,225,0.07);color:#e2e8f0;border-left-color:#4299e1}
+#suggest .si .siq{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#suggest .si .sit{font-size:10px;color:#5a6a7a;flex-shrink:0}
 #badge{font-size:9px;color:#68d391;background:rgba(104,211,145,0.1);border:1px solid rgba(104,211,145,0.2);padding:3px 10px;border-radius:6px;white-space:nowrap;flex-shrink:0;letter-spacing:0.3px}
 #user-label{font-size:10px;color:#a0aec0;background:rgba(160,174,192,0.08);padding:3px 10px;border-radius:6px;white-space:nowrap;max-width:90px;overflow:hidden;text-overflow:ellipsis}
 #ws-btn{position:relative;-webkit-app-region:no-drag;background:rgba(128,90,213,0.08);border:1px solid rgba(128,90,213,0.15);color:#b794f4;padding:3px 12px;border-radius:6px;cursor:pointer;font-size:10px;white-space:nowrap;flex-shrink:0;display:flex;align-items:center;gap:5px;height:26px;transition:all .15s;letter-spacing:0.2px}
@@ -65,6 +72,8 @@ body{display:flex;flex-direction:column}
 @keyframes spin{to{transform:rotate(360deg)}}
 .ib{-webkit-app-region:no-drag;background:rgba(255,255,255,0.04);border:none;color:#8899aa;cursor:pointer;width:32px;height:32px;border-radius:8px;font-size:16px;display:flex;align-items:center;justify-content:center;transition:all .15s}
 .ib:hover{background:rgba(66,153,225,0.15);color:#63b3ed;transform:scale(1.05)}
+#dl-btn{position:relative}
+#dl-badge{position:absolute;top:-6px;right:-6px;min-width:18px;height:18px;padding:0 4px;border-radius:9px;background:#48bb78;color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;line-height:18px;z-index:5;pointer-events:none;box-shadow:0 0 6px rgba(72,187,120,0.5);border:2px solid #0f0f1a}
 
 /* Tabs */
 #tabs{display:flex;align-items:center;height:30px;background:rgba(10,10,20,0.6);padding:0 8px;gap:2px;overflow-x:auto;flex-shrink:0;backdrop-filter:blur(8px)}
@@ -143,6 +152,19 @@ body.fs #find,body.fs #status,body.fs #split-bar{display:none}
 .ht{font-size:13px;color:#e2e8f0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1.4;font-weight:450}
 .hu{font-size:10.5px;color:#5a6a7a;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:1px}
 .him{font-size:10px;color:#3a4a5a;flex-shrink:0;min-width:40px;text-align:right;font-variant-numeric:tabular-nums}
+.dl-bar{height:3px;background:rgba(255,255,255,0.06);border-radius:2px;margin-top:3px;overflow:hidden}
+.dl-fill{height:100%;background:linear-gradient(90deg,#4299e1,#805ad5);border-radius:2px;transition:width .3s}
+.dl-open,.dl-del{background:none;border:none;color:#5a6a7a;cursor:pointer;font-size:14px;padding:4px 6px;border-radius:4px;flex-shrink:0;transition:all .15s}
+.dl-open:hover{background:rgba(66,153,225,0.15);color:#63b3ed}
+.dl-del:hover{background:rgba(229,62,62,0.15);color:#fc8181}
+#aegis-menu{position:relative;flex-shrink:0}
+#aegis-btn{-webkit-app-region:no-drag;background:rgba(128,90,213,0.05);border:1px solid rgba(128,90,213,0.12);color:#b794f4;padding:3px 12px;border-radius:6px;cursor:pointer;font-size:10px;white-space:nowrap;display:flex;align-items:center;gap:5px;height:26px;transition:all .15s;letter-spacing:0.2px}
+#aegis-btn:hover{background:rgba(128,90,213,0.14);border-color:rgba(128,90,213,0.25)}
+#aegis-dd{display:none;position:absolute;top:calc(100% + 4px);right:0;background:linear-gradient(180deg,rgba(22,22,50,0.98),rgba(18,18,42,0.99));border:1px solid rgba(15,52,96,0.4);border-radius:10px;min-width:170px;z-index:50;backdrop-filter:blur(12px);box-shadow:0 6px 24px rgba(0,0,0,0.3);overflow:hidden}
+#aegis-dd.open{display:block}
+#aegis-dd .mi{padding:10px 14px;display:flex;align-items:center;gap:10px;cursor:pointer;transition:all .12s;font-size:12px;color:#a0aec0;border-left:3px solid transparent}
+#aegis-dd .mi:hover{background:rgba(66,153,225,0.06);color:#e2e8f0;border-left-color:#805ad5}
+#aegis-dd .sep{border-top:1px solid rgba(15,52,96,0.3);margin:2px 10px}
 .he{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:10px;color:#4a5568;padding:20px}
 .he .bi{font-size:42px;opacity:0.35}
 .he .bt{font-size:13px;color:#718096}
@@ -176,14 +198,15 @@ body.fs #find,body.fs #status,body.fs #split-bar{display:none}
   <button id="reload">&#x21bb;</button>
   <div id="load"></div>
   <button class="ib" id="hm-btn" title="Home">&#127968;</button>
-  <input id="url" placeholder="Search or enter address" spellcheck="false" autofocus>
+  <div id="url-wrap"><input id="url" placeholder="Search or enter address" spellcheck="false" autofocus><div id="suggest"></div></div>
   <button class="ib" id="bm-btn" title="Bookmark this page">&#9734;</button>
   <span id="user-label"></span>
+  <div id="aegis-menu"><button id="aegis-btn">AEGIS &#9662;</button><div id="aegis-dd"></div></div>
   <div id="ws-btn">&#9632; <span id="ws-name">Default</span> &#9662;<div id="ws-dd"></div></div>
 
   <span id="badge">Ghost Mode</span>
   <button class="ib" id="hb" title="History (Ctrl+H)">&#128214;</button>
-  <button class="ib" id="dl-btn" title="Downloads (Ctrl+J)">&#11015;</button>
+  <button class="ib" id="dl-btn" title="Downloads (Ctrl+J)">&#11015;<span id="dl-badge">0</span></button>
   <button class="ib" id="sb" title="Settings">&#9881;</button>
 </div>
 <div id="tabs"><button id="nt">+</button></div>
@@ -211,7 +234,7 @@ body.fs #find,body.fs #status,body.fs #split-bar{display:none}
 
   <!-- Downloads Panel -->
   <div class="panel" id="dlp">
-    <div class="phdr"><h3>Downloads</h3><button id="cdl">&#x2715;</button></div>
+    <div class="phdr"><h3>Downloads</h3><div style="display:flex;gap:6px"><button id="dl-clear" title="Clear all completed">&#128465;</button><button id="cdl">&#x2715;</button></div></div>
     <div class="pbody" id="dll"></div>
   </div>
 
@@ -424,16 +447,72 @@ g.onTabsList((list) => {
 g.onStatusUrl((u) => { surl.textContent = u || ''; });
 g.onShowHistory(() => toggleH());
 
+// ── URL Suggestions ──
+const suggest = document.getElementById('suggest');
+let suggestIdx = -1;
+let suggestData = [];
+
+function closeSuggest() { suggest.classList.remove('open'); suggest.innerHTML = ''; suggestIdx = -1; suggestData = []; }
+
+function navigateTo(val) {
+  closeSuggest(); let input = val.trim(); if (!input) return;
+  if (!/^https?:\/\//i.test(input)) {
+    if (/^[\w.-]+\.[a-z]{2,}/i.test(input)) input = 'https://' + input;
+    else input = 'https://www.google.com/search?q=' + encodeURIComponent(input);
+  }
+  g.navigate(input); url.blur();
+}
+
+async function fetchSuggestions(q) {
+  if (!q.trim()) { closeSuggest(); return; }
+  try {
+    const queries = await g.fetchSuggestions(q);
+    suggest.innerHTML = '';
+    if (!queries || !queries.length) { closeSuggest(); return; }
+    suggestData = queries;
+    suggest.innerHTML = queries.map((s, i) => '<div class="si" data-idx="' + i + '"><span class="siq">' + esc(s) + '</span><span class="sit">search</span></div>').join('');
+    suggest.classList.add('open'); suggestIdx = -1;
+  } catch(e) { closeSuggest(); }
+}
+
+url.addEventListener('input', () => {
+  if (url.value.trim()) fetchSuggestions(url.value);
+  else closeSuggest();
+});
+
 url.addEventListener('keydown', (e) => {
+  const items = suggest.querySelectorAll('.si');
   if (e.key === 'Enter') {
-    e.preventDefault(); let input = url.value.trim(); if (!input) return;
-    if (!/^https?:\/\//i.test(input)) {
-      if (/^[\w.-]+\.[a-z]{2,}/i.test(input)) input = 'https://' + input;
-      else input = 'https://www.google.com/search?q=' + encodeURIComponent(input);
-    }
-    g.navigate(input);
+    e.preventDefault();
+    if (suggestIdx >= 0 && suggestData[suggestIdx]) { navigateTo(suggestData[suggestIdx]); }
+    else { navigateTo(url.value); }
+  } else if (e.key === 'ArrowDown') {
+    e.preventDefault();
+    if (!items.length) return;
+    suggestIdx = Math.min(suggestIdx + 1, items.length - 1);
+    items.forEach((el, i) => el.classList.toggle('sel', i === suggestIdx));
+    if (suggestData[suggestIdx]) url.value = suggestData[suggestIdx];
+  } else if (e.key === 'ArrowUp') {
+    e.preventDefault();
+    if (!items.length) return;
+    if (suggestIdx <= 0) { suggestIdx = -1; items.forEach(el => el.classList.remove('sel')); return; }
+    suggestIdx = Math.max(suggestIdx - 1, 0);
+    items.forEach((el, i) => el.classList.toggle('sel', i === suggestIdx));
+    if (suggestData[suggestIdx]) url.value = suggestData[suggestIdx];
+  } else if (e.key === 'Escape') {
+    closeSuggest();
   }
 });
+
+suggest.addEventListener('mousedown', (e) => {
+  const si = e.target.closest('.si');
+  if (!si) return;
+  const idx = parseInt(si.dataset.idx);
+  if (suggestData[idx]) navigateTo(suggestData[idx]);
+});
+
+url.addEventListener('blur', () => setTimeout(closeSuggest, 200));
+document.addEventListener('click', (e) => { if (!e.target.closest('#url-wrap')) closeSuggest(); });
 back.onclick = () => g.goBack();
 fwd.onclick = () => g.goForward();
 reload.onclick = () => { if (reload.innerHTML.includes('\u2715')) g.stop(); else g.reload(); };
@@ -520,10 +599,23 @@ const dlBtn = document.getElementById('dl-btn');
 const dlp = document.getElementById('dlp');
 const dll = document.getElementById('dll');
 const cdl = document.getElementById('cdl');
+const dlClear = document.getElementById('dl-clear');
 let dlItems = [];
+let dlCount = 0;
+const dlBadge = document.getElementById('dl-badge');
+dlBadge.textContent = '0';
 
-dlBtn.onclick = () => { toggleDl(); };
+let dlBadgeTimer = null;
+dlBtn.onclick = () => {
+  toggleDl();
+  clearTimeout(dlBadgeTimer);
+  dlBadgeTimer = setTimeout(() => { dlCount = 0; dlBadge.textContent = '0'; dlBadge.style.display = 'none'; }, 1000);
+};
 cdl.onclick = () => { dlp.classList.remove('open'); g.panelToggle(false); };
+dlClear.onclick = () => {
+  dlItems = dlItems.filter(d => !d.done);
+  renderDl();
+};
 
 function toggleDl() {
   hp.classList.remove('open'); sp.classList.remove('open');
@@ -533,12 +625,13 @@ function toggleDl() {
 
 g.onDownloadProgress((d) => {
   const i = dlItems.findIndex(x => x.id === d.id);
-  if (i >= 0) dlItems[i] = d;
-  else dlItems.unshift(d);
+  if (i >= 0) { dlItems[i] = d; }
+  else { dlItems.unshift(d); dlCount++; dlBadge.textContent = dlCount; dlBadge.style.display = ''; }
   if (dlp.classList.contains('open')) renderDl();
 });
 
 g.onToggleDownloads(() => toggleDl());
+g.onDownloadsCleared(() => { dlItems = []; dlCount = 0; dlBadge.textContent = '0'; dlBadge.style.display = 'none'; if (dlp.classList.contains('open')) renderDl(); });
 
 async function loadDlHistory() {
   try {
@@ -547,10 +640,24 @@ async function loadDlHistory() {
     dlItems = [...cur, ...hist.map(h => ({
       id: 'hist_' + h.id, name: h.filename, total: h.total_bytes, received: h.received_bytes,
       start: h.start_time, done: !!h.done, success: !!h.success, canceled: !!h.canceled,
-      url: h.url, savePath: h.save_path, speed: 0, isHistory: true,
+      url: h.url, savePath: h.save_path, speed: 0,
     }))];
   } catch(e) {}
   renderDl();
+}
+
+function fmtTime(ts) {
+  if (!ts) return '';
+  const d = new Date(ts);
+  return d.toLocaleDateString() + ' ' + d.toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' });
+}
+
+function formatBytes(b) {
+  if (b == null || b <= 0) return '0 B';
+  const u = ['B','KB','MB','GB'];
+  let i = 0; let v = b;
+  while (v >= 1024 && i < u.length - 1) { v /= 1024; i++; }
+  return v.toFixed(i > 0 ? 1 : 0) + ' ' + u[i];
 }
 
 function renderDl() {
@@ -561,32 +668,60 @@ function renderDl() {
   }
   dlItems.forEach(d => {
     const el = document.createElement('div'); el.className = 'hi';
-    const pct = d.total > 0 ? Math.round(d.received / d.total * 100) : 0;
-    let icon = '&#128190;', statusText = '';
-    if (!d.done) { icon = '&#8987;'; statusText = pct + '% - ' + formatBytes(d.speed) + '/s'; }
-    else if (d.success) { icon = '&#10003;'; statusText = 'Completed'; }
-    else if (d.canceled) { icon = '&#10007;'; statusText = 'Canceled'; }
-    else { icon = '&#9888;'; statusText = 'Failed'; }
+    const pct = d.total > 0 ? Math.min(100, Math.round(d.received / d.total * 100)) : 0;
+    const isFile = d.done && d.savePath;
+
+    let icon, statusText, actionsHtml;
+    if (!d.done) {
+      icon = '&#8987;';
+      statusText = pct + '% &middot; ' + formatBytes(d.speed) + '/s';
+      actionsHtml = '';
+    } else if (d.success) {
+      icon = '&#10003;';
+      statusText = 'Completed &middot; ' + formatBytes(d.total);
+      actionsHtml = '<button class="dl-open" title="Open file">&#128196;</button><button class="dl-del" title="Delete file">&#128465;</button>';
+    } else if (d.canceled) {
+      icon = '&#10007;';
+      statusText = 'Canceled';
+      actionsHtml = '';
+    } else {
+      icon = '&#9888;';
+      statusText = 'Failed';
+      actionsHtml = '';
+    }
+
     el.innerHTML = '<div class="hic">' + icon + '</div>'
       + '<div class="hb"><div class="ht">' + esc(d.name) + '</div>'
-      + '<div class="hu">' + formatBytes(d.received) + ' / ' + formatBytes(d.total) + ' &middot; ' + statusText + '</div>'
-      + '<div style="height:3px;background:rgba(255,255,255,0.06);border-radius:2px;margin-top:4px;overflow:hidden">'
-      + '<div style="height:100%;width:' + pct + '%;background:linear-gradient(90deg,#4299e1,#805ad5);border-radius:2px;transition:width .3s"></div></div></div>';
-    if (d.savePath) {
+      + '<div class="hu">' + statusText + ' &middot; ' + fmtTime(d.start) + '</div>'
+      + '<div class="dl-bar"><div class="dl-fill" style="width:' + pct + '%"></div></div></div>'
+      + actionsHtml;
+
+    if (isFile) {
       el.style.cursor = 'pointer';
       el.title = 'Open file location';
       el.onclick = () => { try { g.openDownloadFolder(d.savePath); } catch(e) {} };
     }
+    const openBtn = el.querySelector('.dl-open');
+    if (openBtn) {
+      openBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (d.savePath) g.openDownloadFile(d.savePath);
+      });
+    }
+    const delBtn = el.querySelector('.dl-del');
+    if (delBtn) {
+      delBtn.addEventListener('click', async (e) => {
+        e.stopPropagation();
+        el.style.opacity = '0.3';
+        if (d.savePath) await g.deleteDownload(d.savePath);
+        const idx = dlItems.indexOf(d);
+        if (idx >= 0) dlItems.splice(idx, 1);
+        el.remove();
+        if (!dlItems.length) renderDl();
+      });
+    }
     dll.appendChild(el);
   });
-}
-
-function formatBytes(b) {
-  if (!b || b <= 0) return '0 B';
-  const u = ['B','KB','MB','GB'];
-  let i = 0; let v = b;
-  while (v >= 1024 && i < u.length - 1) { v /= 1024; i++; }
-  return v.toFixed(i > 0 ? 1 : 0) + ' ' + u[i];
 }
 
 // ── Split View ──
@@ -663,10 +798,7 @@ async function renderWSDD() {
       };
       wsDD.appendChild(el);
     });
-    const sep = document.createElement('div'); sep.className = 'wssep'; wsDD.appendChild(sep);
-    const man = document.createElement('button'); man.className = 'wsman'; man.innerHTML = '\u2699\uFE0F Manage Workspaces';
-    man.onclick = (e) => { e.stopPropagation(); window.location.href = 'workspace.html'; };
-    wsDD.appendChild(man);
+
   } catch(e) {
     wsDD.innerHTML = '<div style="padding:12px 14px;font-size:12px;color:#fc8181">Failed to load workspaces</div>';
   }
@@ -674,6 +806,35 @@ async function renderWSDD() {
 
 wsBtn.onclick = toggleWS;
 document.addEventListener('click', (e) => { if (!wsBtn.contains(e.target)) wsDD.classList.remove('open'); });
+
+// ── AEGIS Menu ──
+const aegisBtn = document.getElementById('aegis-btn');
+const aegisDD = document.getElementById('aegis-dd');
+
+aegisBtn.onclick = (e) => {
+  e.stopPropagation();
+  aegisDD.classList.toggle('open');
+};
+document.addEventListener('click', (e) => { if (!aegisBtn.closest('#aegis-menu').contains(e.target)) aegisDD.classList.remove('open'); });
+
+aegisDD.innerHTML =
+  '<div class="mi" data-action="workspaces">&#127968; Return to Workspaces</div>'
+  + '<div class="mi" data-action="login">&#128682; Return to Login</div>'
+  + '<div class="sep"></div>'
+  + '<div class="mi" data-action="downloads">&#11015; Downloads</div>'
+  + '<div class="sep"></div>'
+  + '<div class="mi" data-action="quit">&#10007; Quit</div>';
+
+aegisDD.addEventListener('click', (e) => {
+  const mi = e.target.closest('.mi');
+  if (!mi) return;
+  aegisDD.classList.remove('open');
+  const action = mi.dataset.action;
+  if (action === 'workspaces') g.returnToWorkspaces();
+  else if (action === 'login') g.returnToLogin();
+  else if (action === 'downloads') g.toggleDownloads();
+  else if (action === 'quit') g.quitApp();
+});
 
 g.onWorkspaceSwitched((d) => {
   wsName.textContent = d.name;

@@ -84,10 +84,21 @@ contextBridge.exposeInMainWorld('ghost', {
   // Downloads
   getDownloads: () => ipcRenderer.invoke('get-downloads'),
   getDownloadsHistory: () => ipcRenderer.invoke('get-downloads-history'),
+  getDownloadDir: () => ipcRenderer.invoke('get-download-dir'),
   onDownloadProgress: (cb) => ipcRenderer.on('download-progress', (e, d) => cb(d)),
   onToggleDownloads: (cb) => ipcRenderer.on('toggle-downloads', () => cb()),
+  onDownloadsCleared: (cb) => ipcRenderer.on('downloads-cleared', () => cb()),
   toggleDownloads: () => ipcRenderer.send('toggle-downloads'),
   openDownloadFolder: (savePath) => ipcRenderer.invoke('open-download-folder', savePath),
+  openDownloadFile: (savePath) => ipcRenderer.invoke('open-download-file', savePath),
+  deleteDownload: (savePath) => ipcRenderer.invoke('delete-download', savePath),
+
+  // Suggestions
+  fetchSuggestions: (q) => ipcRenderer.invoke('fetch-suggestions', q),
+
+  // Navigation from toolbar menu
+  returnToWorkspaces: () => ipcRenderer.send('return-to-workspaces-req'),
+  returnToLogin: () => ipcRenderer.send('return-to-login-req'),
 
   // Emergency
   loginGuest: () => ipcRenderer.invoke('login-guest'),

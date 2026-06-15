@@ -57,7 +57,7 @@ function syncViews() {
   if (!mainWindow || mainWindow.isDestroyed()) return;
   const isFS = mainWindow.isFullScreen();
   const b = mainWindow.getBounds();
-  const pw = (panelOpen && !isFS) ? PANEL_WIDTH : 0;
+  const pw = panelOpen ? PANEL_WIDTH : 0;
   const top = TOP;
   const h = b.height - top - (isFS ? 0 : BOTTOM);
   if (splitMode && splitLeft && splitRight) {
@@ -104,12 +104,14 @@ function initDB() {
       url TEXT NOT NULL, title TEXT DEFAULT '', timestamp INTEGER NOT NULL
     );
     CREATE TABLE IF NOT EXISTS downloads (
-      id INTEGER PRIMARY KEY AUTOINCREMENT, user_pseudo TEXT NOT NULL,
+      id INTEGER PRIMARY KEY AUTOINCREMENT, workspace_id TEXT NOT NULL, user_pseudo TEXT NOT NULL,
       filename TEXT NOT NULL, url TEXT, save_path TEXT, total_bytes INTEGER DEFAULT 0,
       received_bytes INTEGER DEFAULT 0, start_time INTEGER NOT NULL,
       done INTEGER DEFAULT 0, success INTEGER DEFAULT 0, canceled INTEGER DEFAULT 0
     );
   `);
+  try { db.exec('ALTER TABLE downloads ADD COLUMN workspace_id TEXT NOT NULL DEFAULT \'\''); } catch(e) {}
+  try { db.exec('UPDATE downloads SET workspace_id = \'default\' WHERE workspace_id = \'\''); } catch(e) {}
   if (hasJson) {
     try {
       const json = JSON.parse(fs.readFileSync(jsonFile, 'utf-8'));
@@ -218,7 +220,7 @@ function buildMenu() {
       { type: 'separator' },
       { label: 'Split', submenu: splitItems },
       { type: 'separator' },
-      { label: 'Quit', accelerator: 'CmdOrCtrl+Q', click: () => app.quit() },
+      { label: 'Quit', accelerator: 'Escape', click: () => app.quit() },
     ],
   };
   const wsMenu = { label: 'Workspaces', submenu: [] };
@@ -255,8 +257,10 @@ function createWindow() {
     t.push({ label:'Select All', role:'selectAll' });
     Menu.buildFromTemplate(t).popup({ window: mainWindow });
   });
-  mainWindow.on('enter-full-screen', () => { if (!mainWindow.isDestroyed()) { mainWindow.webContents.send('fs-change', true); syncViews(); } });
-  mainWindow.on('leave-full-screen', () => { if (!mainWindow.isDestroyed()) { mainWindow.webContents.send('fs-change', false); syncViews(); } });
+  mainWindow.on('enter-full-screen', () => { if (!mainWindow.isDestroyed()) { mainWindow.setMenuBarVisibility(true); buildMenu(); mainWindow.webContents.send('fs-change', true); syncViews(); } });
+  mainWindow.on('leave-full-screen', () => { if (!mainWindow.isDestroyed()) { mainWindow.setMenuBarVisibility(true); setTimeout(() => { if (!mainWindow.isDestroyed()) { buildMenu(); mainWindow.setMenuBarVisibility(true); } }, 200); mainWindow.webContents.send('fs-change', false); syncViews(); } });
+  mainWindow.on('minimize', () => { if (!mainWindow.isDestroyed()) mainWindow.setMenuBarVisibility(true); });
+  mainWindow.on('restore', () => { if (!mainWindow.isDestroyed()) { buildMenu(); mainWindow.setMenuBarVisibility(true); } });
   setupF11Handler(mainWindow.webContents);
 }
 
@@ -392,6 +396,8 @@ function openBrowser(workspaceId) {
   const user = getUser(currentUser);
   if (!user) return;
   ensureDefaultWs(currentUser);
+  downloadsList = [];
+  downloadIdCounter = 0;
   currentWorkspace = workspaceId || user.active_workspace || 'default';
   db.prepare('UPDATE users SET active_workspace = ? WHERE pseudo = ?').run(currentWorkspace, currentUser);
 
@@ -420,6 +426,9 @@ async function switchWorkspace(workspaceId) {
   const prevWs = currentWorkspace;
   saveUserTabsPersist();
   hideAllViews();
+  downloadsList = [];
+  downloadIdCounter = 0;
+  try { if (mainWindow && !mainWindow.isDestroyed()) mainWindow.webContents.send('downloads-cleared'); } catch(e) {}
   const user = getUser(currentUser);
   if (!user) return;
   currentWorkspace = workspaceId;
@@ -495,59 +504,88 @@ function setupContextMenu(wc) {
 let downloadsList = [];
 let downloadIdCounter = 0;
 
+function sanitizeFilename(name) {
+  return name.replace(/[<>:"\/\\|?*]/g, '_').trim();
+}
+
 function handleDownload(item) {
-  const name = item.getFilename();
+  let name = sanitizeFilename(item.getFilename());
+  if (!name) name = 'download_' + Date.now();
   const total = item.getTotalBytes();
   const url = item.getURL();
   const dlId = downloadIdCounter++;
-  downloadsList.push({ id: dlId, name, total, received: 0, speed: 0, start: Date.now(), done: false, success: false, canceled: false, url, savePath: '' });
-
+  const savePath = path.join(app.getPath('downloads'), name);
+  downloadsList.push({ id: dlId, name, total, received: 0, speed: 0, start: Date.now(), done: false, success: false, canceled: false, url, savePath });
   const entry = downloadsList[downloadsList.length - 1];
 
+  try { item.setSavePath(savePath); } catch(e) {}
+
   item.on('updated', (e, state) => {
-    const received = item.getReceivedBytes();
-    entry.received = received;
+    entry.received = item.getReceivedBytes();
     entry.speed = item.getCurrentBytesPerSecond();
-    if (mainWindow && !mainWindow.isDestroyed()) mainWindow.webContents.send('download-progress', {
-      id: dlId, name, total, received, speed: entry.speed, start: entry.start, done: false,
-    });
+    try {
+      if (mainWindow && !mainWindow.isDestroyed()) mainWindow.webContents.send('download-progress', {
+        id: dlId, name, total, received: entry.received, speed: entry.speed, start: entry.start, done: false, savePath,
+      });
+    } catch(e) {}
   });
 
   item.on('done', (e, state) => {
-    const completed = state === 'completed';
     entry.done = true;
-    entry.success = completed;
-    entry.savePath = item.getSavePath();
-    if (mainWindow && !mainWindow.isDestroyed()) mainWindow.webContents.send('download-progress', {
-      id: dlId, name, total, received: total, speed: 0, start: entry.start, done: true, success: completed,
-    });
+    entry.success = state === 'completed';
+    entry.canceled = state === 'cancelled';
+    entry.received = item.getReceivedBytes();
+    const actualPath = item.getSavePath() || savePath;
+    entry.savePath = actualPath;
+    try {
+      if (mainWindow && !mainWindow.isDestroyed()) mainWindow.webContents.send('download-progress', {
+        id: dlId, name, total, received: entry.received, speed: 0, start: entry.start, done: true,
+        success: entry.success, canceled: entry.canceled, savePath: actualPath,
+      });
+    } catch(e) {}
     if (currentUser) {
-      db.prepare('INSERT INTO downloads (user_pseudo,filename,url,save_path,total_bytes,received_bytes,start_time,done,success,canceled) VALUES (?,?,?,?,?,?,?,?,?,?)').run(
-        currentUser, name, url, entry.savePath || '', total, completed ? total : entry.received, entry.start, completed ? 1 : 0, completed ? 1 : 0, state === 'cancelled' ? 1 : 0
-      );
+      try {
+        db.prepare('INSERT INTO downloads (workspace_id,user_pseudo,filename,url,save_path,total_bytes,received_bytes,start_time,done,success,canceled) VALUES (?,?,?,?,?,?,?,?,?,?,?)').run(
+          currentWorkspace || 'default', currentUser, name, url, actualPath, total, entry.received, entry.start, entry.success ? 1 : 0, entry.success ? 1 : 0, entry.canceled ? 1 : 0
+        );
+      } catch(e) {}
     }
   });
-
-  item.setSaveDialogPath(path.join(app.getPath('downloads'), name));
-  item.saveDialog().then(r => { if (r.canceled) item.cancel(); });
 }
+
+function getDlDir() { return app.getPath('downloads'); }
 
 ipcMain.handle('get-downloads', () => downloadsList.map(d => ({
   id: d.id, name: d.name, total: d.total, received: d.received, speed: d.speed,
-  start: d.start, done: d.done, success: d.success, canceled: d.canceled, url: d.url,
+  start: d.start, done: d.done, success: d.success, canceled: d.canceled, url: d.url, savePath: d.savePath,
 })));
 
 ipcMain.handle('get-downloads-history', () => {
-  if (!currentUser) return [];
-  return db.prepare('SELECT * FROM downloads WHERE user_pseudo=? ORDER BY start_time DESC LIMIT 100').all(currentUser);
+  if (!currentUser || !currentWorkspace) return [];
+  try {
+    return db.prepare('SELECT * FROM downloads WHERE user_pseudo=? AND workspace_id=? ORDER BY start_time DESC LIMIT 200').all(currentUser, currentWorkspace);
+  } catch(e) { return []; }
 });
+
+ipcMain.handle('get-download-dir', () => getDlDir());
 
 function toggleDownloads() {
   if (mainWindow && !mainWindow.isDestroyed()) mainWindow.webContents.send('toggle-downloads');
 }
 
 ipcMain.handle('open-download-folder', (e, savePath) => {
-  if (savePath) { try { shell.showItemInFolder(savePath); } catch(e) {} }
+  if (!savePath) return;
+  try { shell.showItemInFolder(savePath); } catch(e) { try { shell.openPath(path.dirname(savePath)); } catch(e2) {} }
+});
+
+ipcMain.handle('open-download-file', (e, savePath) => {
+  if (!savePath) return;
+  try { shell.openPath(savePath); } catch(e) {}
+});
+
+ipcMain.handle('delete-download', (e, savePath) => {
+  if (!savePath) return;
+  try { fs.unlinkSync(savePath); } catch(e) {}
 });
 
 // ── Settings Window ──
@@ -895,6 +933,15 @@ ipcMain.on('panel-toggle', (e, open) => { panelOpen = open; syncViews(); });
 ipcMain.on('open-history', () => { if (mainWindow && !mainWindow.isDestroyed()) mainWindow.webContents.send('show-history'); });
 ipcMain.handle('get-tabs', () => currentTabs().map(t => ({ id: t.id, url: t.view.webContents.getURL(), title: t.view.webContents.getTitle() })));
 
+ipcMain.handle('fetch-suggestions', async (e, q) => {
+  if (!q || !q.trim()) return [];
+  try {
+    const res = await fetch('https://suggestqueries.google.com/complete/search?client=firefox&q=' + encodeURIComponent(q));
+    const data = await res.json();
+    return data[1] || [];
+  } catch(e) { return []; }
+});
+
 // ── Zoom (global) ──
 
 ipcMain.on('zoom-in', () => {
@@ -927,6 +974,10 @@ function setupF11Handler(wc) {
       event.preventDefault();
       mainWindow.setFullScreen(!mainWindow.isFullScreen());
     }
+    if (input.key === 'Escape' && input.type === 'keyDown') {
+      event.preventDefault();
+      app.quit();
+    }
   });
 }
 
@@ -944,6 +995,9 @@ ipcMain.on('go-home', () => { const t = activeTab(); if (t) t.view.webContents.l
 ipcMain.on('reset-idle', () => { if (currentUser) resetIdleTimer(); });
 
 // ── Lifecycle ──
+
+ipcMain.on('return-to-workspaces-req', () => { saveUserTabsPersist(); if (mainWindow && !mainWindow.isDestroyed()) mainWindow.webContents.send('return-to-workspaces'); });
+ipcMain.on('return-to-login-req', () => { saveUserTabsPersist(); if (mainWindow && !mainWindow.isDestroyed()) mainWindow.webContents.send('return-to-login'); });
 
 ipcMain.on('quit-app', () => app.quit());
 
