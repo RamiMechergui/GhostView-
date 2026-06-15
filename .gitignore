@@ -1,0 +1,7 @@
+node_modules/
+dist/
+portable-dist/
+*.log
+*.bak
+build-icon.mjs
+check-db.js
