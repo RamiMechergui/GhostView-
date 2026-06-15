@@ -1,0 +1,39 @@
+{
+  "name": "ghostview",
+  "version": "1.0.0",
+  "description": "Zero-tracking, zero-storage privacy browser",
+  "main": "main.js",
+  "build": {
+    "appId": "com.ghostview.browser",
+    "productName": "GhostView",
+    "win": {
+      "target": "portable",
+      "icon": "logo.ico",
+      "signDlls": false,
+      "signAndEditExecutable": false
+    },
+    "portable": {
+      "artifactName": "GhostView-${version}.exe",
+      "requestExecutionLevel": "user"
+    },
+    "directories": {
+      "output": "dist"
+    }
+  },
+  "scripts": {
+    "start": "electron .",
+    "pack": "electron-packager . GhostView --platform=win32 --arch=x64 --icon=logo.ico --out=dist --overwrite",
+    "portable": "electron-builder --win portable",
+    "clean": "Remove-Item -Recurse -Force dist -ErrorAction SilentlyContinue"
+  },
+  "devDependencies": {
+    "electron": "^35.0.0",
+    "electron-builder": "^25.0.0",
+    "electron-packager": "^17.1.2",
+    "png-to-ico": "^3.0.1",
+    "sharp": "^0.35.1"
+  },
+  "dependencies": {
+    "better-sqlite3": "^12.10.1"
+  }
+}

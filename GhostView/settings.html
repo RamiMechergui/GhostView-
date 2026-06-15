@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:linear-gradient(135deg,#141432 0%,#1a1a2e 50%,#16213e 100%);color:#e2e8f0;overflow:hidden}
+
+/* Scrollable container */
+.scroll{height:100%;overflow-y:auto;padding:32px 24px 24px}
+.scroll::-webkit-scrollbar{width:4px}
+.scroll::-webkit-scrollbar-thumb{background:#0f3460;border-radius:2px}
+
+/* Header */
+.header{text-align:center;margin-bottom:28px}
+.header h1{font-size:22px;font-weight:300;letter-spacing:2px;color:#e2e8f0}
+.header p{font-size:12px;color:#68d391;margin-top:4px}
+.close-btn{position:absolute;top:16px;right:16px;width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,0.05);border:1px solid #1a365d;color:#a0aec0;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;z-index:5}
+.close-btn:hover{background:#e53e3e;border-color:#e53e3e;color:#fff}
+
+/* Cards */
+.card{background:rgba(15,52,96,0.35);border:1px solid #1a365d;border-radius:14px;padding:24px;margin-bottom:16px;backdrop-filter:blur(4px);transition:border-color .2s}
+.card:hover{border-color:#2a4a7a}
+.card:last-child{margin-bottom:0}
+.card-title{font-size:14px;font-weight:500;color:#e2e8f0;margin-bottom:2px}
+.card-desc{font-size:11px;color:#718096;margin-bottom:16px}
+
+/* Photo row */
+.photo-row{display:flex;align-items:center;gap:20px}
+.photo-ring{width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,#4299e1,#805ad5);padding:3px;flex-shrink:0;box-shadow:0 0 20px rgba(66,153,225,0.2)}
+.photo-inner{width:100%;height:100%;border-radius:50%;background:#0a2950;overflow:hidden}
+.photo-inner img{width:100%;height:100%;object-fit:cover}
+.photo-inner .ph{width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:#4a5568;font-size:32px}
+.photo-actions{display:flex;flex-direction:column;gap:8px;align-items:flex-start}
+.btn-choose{font-size:12px;color:#fff;cursor:pointer;padding:8px 20px;background:linear-gradient(135deg,#4299e1,#3182ce);border:none;border-radius:8px;text-align:center;transition:all .2s;display:inline-block}
+.btn-choose:hover{box-shadow:0 4px 12px rgba(66,153,225,0.3);transform:translateY(-1px)}
+.btn-remove{font-size:11px;color:#fc8181;cursor:pointer;background:none;border:none;padding:4px 0;transition:color .2s}
+.btn-remove:hover{color:#e53e3e}
+#photo-input{display:none}
+.photo-hint{font-size:10px;color:#4a5568}
+
+/* Form inputs */
+.input-group{margin-bottom:12px}
+.input-group:last-child{margin-bottom:16px}
+.st-input{width:100%;padding:11px 14px;background:#0a2950;border:1px solid #1a365d;border-radius:8px;color:#e2e8f0;font-size:13px;outline:none;transition:border-color .2s,box-shadow .2s}
+.st-input:focus{border-color:#4299e1;box-shadow:0 0 0 3px rgba(66,153,225,0.12)}
+.st-input::placeholder{color:#4a5568}
+
+/* Buttons */
+.btn{padding:10px 24px;border:none;border-radius:8px;font-size:13px;cursor:pointer;font-weight:500;transition:all .2s;display:inline-flex;align-items:center;gap:6px}
+.btn-primary{background:linear-gradient(135deg,#4299e1,#3182ce);color:#fff}
+.btn-primary:hover{box-shadow:0 4px 14px rgba(66,153,225,0.35);transform:translateY(-1px)}
+.btn-primary:disabled{opacity:0.4;cursor:default;transform:none;box-shadow:none}
+.btn-danger{background:linear-gradient(135deg,#fc8181,#e53e3e);color:#fff}
+.btn-danger:hover{box-shadow:0 4px 14px rgba(229,62,62,0.3);transform:translateY(-1px)}
+.btn-ghost{background:rgba(66,153,225,0.1);color:#4299e1;border:1px solid rgba(66,153,225,0.2)}
+.btn-ghost:hover{background:rgba(66,153,225,0.2)}
+.msg{font-size:11px;margin-top:8px;min-height:16px}
+.msg-ok{color:#68d391}
+.msg-err{color:#fc8181}
+
+/* Status indicator */
+.status-dot{width:6px;height:6px;border-radius:50%;background:#68d391;display:inline-block;margin-right:6px;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+
+/* Footer */
+.footer{text-align:center;padding:16px 0 8px;font-size:10px;color:#2d3748}
+</style>
+</head>
+<body>
+<div class="scroll">
+  <button class="close-btn" id="close-btn">&#x2715;</button>
+
+  <div class="header">
+    <h1>Settings</h1>
+    <p><span class="status-dot"></span>Ghost Mode Active</p>
+  </div>
+
+  <!-- Profile Photo -->
+  <div class="card">
+    <div class="card-title">Profile Photo</div>
+    <div class="card-desc">Personalize your GhostView profile</div>
+    <div class="photo-row">
+      <div class="photo-ring">
+        <div class="photo-inner">
+          <div class="ph" id="ph-placeholder">&#128100;</div>
+          <img id="ph-img" style="display:none">
+        </div>
+      </div>
+      <div class="photo-actions">
+        <label class="btn-choose" for="photo-input">Choose Photo</label>
+        <input type="file" id="photo-input" accept="image/png,image/jpeg,image/gif,image/webp">
+        <button class="btn-remove" id="remove-photo" style="display:none">Remove photo</button>
+        <span class="photo-hint">PNG, JPG, GIF, WebP (max 2MB)</span>
+        <div id="photo-msg" class="msg"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Change Password -->
+  <div class="card">
+    <div class="card-title">Change Password</div>
+    <div class="card-desc">Update your account password</div>
+    <div class="input-group"><input type="password" class="st-input" id="cp-old" placeholder="Current password"></div>
+    <div class="input-group"><input type="password" class="st-input" id="cp-new" placeholder="New password (min 3 chars)"></div>
+    <div class="input-group"><input type="password" class="st-input" id="cp-new2" placeholder="Confirm new password"></div>
+    <button class="btn btn-primary" id="cp-btn">Update Password</button>
+    <div id="cp-msg" class="msg"></div>
+  </div>
+
+  <!-- Browsing History -->
+  <div class="card">
+    <div class="card-title">Browsing History</div>
+    <div class="card-desc">Review your browsing history. You'll need to re-enter your password.</div>
+    <button class="btn btn-ghost" id="hist-btn">&#128214; View History</button>
+  </div>
+
+  <div class="footer">GhostView v1.0 &mdash; Zero tracking. Zero cache.</div>
+</div>
+
+<script>
+const g = window.ghost;
+
+// Close
+document.getElementById('close-btn').onclick = () => window.close();
+
+// Photo
+const photoInput = document.getElementById('photo-input');
+const phImg = document.getElementById('ph-img');
+const phPlaceholder = document.getElementById('ph-placeholder');
+const photoMsg = document.getElementById('photo-msg');
+const removePhoto = document.getElementById('remove-photo');
+
+photoInput.onchange = () => {
+  const file = photoInput.files[0];
+  if (!file) return;
+  if (file.size > 2*1024*1024) { photoMsg.textContent = 'Image too large (max 2MB).'; photoMsg.className = 'msg msg-err'; return; }
+  const reader = new FileReader();
+  reader.onload = async (e) => {
+    const base64 = e.target.result;
+    const r = await g.uploadPhoto(base64);
+    if (r.ok) {
+      phImg.src = base64; phImg.style.display = 'block'; phPlaceholder.style.display = 'none';
+      removePhoto.style.display = 'inline';
+      photoMsg.textContent = 'Photo updated!'; photoMsg.className = 'msg msg-ok';
+    } else {
+      photoMsg.textContent = 'Failed to save photo.'; photoMsg.className = 'msg msg-err';
+    }
+  };
+  reader.readAsDataURL(file);
+};
+
+removePhoto.onclick = async () => {
+  const r = await g.uploadPhoto(null);
+  if (r.ok) {
+    phImg.style.display = 'none'; phPlaceholder.style.display = 'flex';
+    removePhoto.style.display = 'none';
+    photoMsg.textContent = 'Photo removed.'; photoMsg.className = 'msg msg-ok';
+  }
+};
+
+// Change Password
+const cpOld = document.getElementById('cp-old');
+const cpNew = document.getElementById('cp-new');
+const cpNew2 = document.getElementById('cp-new2');
+const cpBtn = document.getElementById('cp-btn');
+const cpMsg = document.getElementById('cp-msg');
+
+cpBtn.onclick = async () => {
+  const old = cpOld.value, p1 = cpNew.value, p2 = cpNew2.value;
+  cpMsg.className = 'msg'; cpMsg.textContent = '';
+  if (!old || !p1 || !p2) { cpMsg.textContent = 'Fill in all fields.'; cpMsg.className = 'msg msg-err'; return; }
+  if (p1 !== p2) { cpMsg.textContent = 'New passwords do not match.'; cpMsg.className = 'msg msg-err'; return; }
+  if (p1.length < 3) { cpMsg.textContent = 'Min 3 characters.'; cpMsg.className = 'msg msg-err'; return; }
+  cpBtn.disabled = true; cpBtn.textContent = 'Updating...';
+  const r = await g.changePassword(old, p1);
+  cpBtn.disabled = false; cpBtn.textContent = 'Update Password';
+  if (r.ok) {
+    cpMsg.textContent = 'Password changed!'; cpMsg.className = 'msg msg-ok';
+    cpOld.value = ''; cpNew.value = ''; cpNew2.value = '';
+  } else {
+    cpMsg.textContent = r.error; cpMsg.className = 'msg msg-err';
+  }
+};
+
+// View History button
+document.getElementById('hist-btn').onclick = () => {
+  g.openHistory();
+  window.close();
+};
+
+// Load user data
+g.getUser().then(u => {
+  if (u && u.photo) {
+    phImg.src = u.photo; phImg.style.display = 'block'; phPlaceholder.style.display = 'none';
+    removePhoto.style.display = 'inline';
+  }
+});
+</script>
+</body>
+</html>

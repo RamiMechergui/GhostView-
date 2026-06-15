@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;background:#0f0f1a;color:#e2e8f0;user-select:none}
+body{display:flex;flex-direction:column}
+
+/* Toolbar */
+#tb{display:flex;align-items:center;gap:6px;padding:8px 14px;height:52px;background:linear-gradient(135deg,#1a1a2e,#16213e);border-bottom:1px solid rgba(15,52,96,0.5);-webkit-app-region:drag}
+#tb button{-webkit-app-region:no-drag;background:rgba(255,255,255,0.04);border:none;color:#8899aa;cursor:pointer;width:32px;height:32px;border-radius:8px;font-size:15px;display:flex;align-items:center;justify-content:center;transition:all .15s}
+#tb button:hover{background:rgba(66,153,225,0.15);color:#63b3ed;transform:scale(1.05)}
+#tb button:disabled{opacity:0.25;cursor:default;transform:none}
+#logo{display:flex;align-items:center;gap:8px;margin-right:4px;flex-shrink:0}
+#logo svg{width:22px;height:22px}
+#logo span{font-size:13px;font-weight:600;color:#63b3ed;letter-spacing:1px}
+#url{flex:1;background:rgba(10,41,80,0.7);border:1px solid rgba(26,54,93,0.6);border-radius:10px;padding:7px 16px;color:#e2e8f0;font-size:13px;outline:none;height:34px;-webkit-app-region:no-drag;transition:border-color .2s,box-shadow .2s}
+#url:focus{border-color:rgba(66,153,225,0.5);box-shadow:0 0 0 3px rgba(66,153,225,0.08)}
+#url::placeholder{color:#4a5568}
+#badge{font-size:9px;color:#68d391;background:rgba(104,211,145,0.1);border:1px solid rgba(104,211,145,0.2);padding:3px 10px;border-radius:6px;white-space:nowrap;flex-shrink:0;letter-spacing:0.3px}
+#user-label{font-size:10px;color:#a0aec0;background:rgba(160,174,192,0.08);padding:3px 10px;border-radius:6px;white-space:nowrap;max-width:90px;overflow:hidden;text-overflow:ellipsis}
+#ws-btn{position:relative;-webkit-app-region:no-drag;background:rgba(128,90,213,0.08);border:1px solid rgba(128,90,213,0.15);color:#b794f4;padding:3px 12px;border-radius:6px;cursor:pointer;font-size:10px;white-space:nowrap;flex-shrink:0;display:flex;align-items:center;gap:5px;height:26px;transition:all .15s;letter-spacing:0.2px}
+#ws-btn:hover{background:rgba(128,90,213,0.16);border-color:rgba(128,90,213,0.25)}
+#ws-dd{display:none;position:absolute;top:calc(100% + 4px);right:0;background:linear-gradient(180deg,rgba(22,22,50,0.98),rgba(18,18,42,0.99));border:1px solid rgba(15,52,96,0.4);border-radius:10px;min-width:170px;z-index:50;backdrop-filter:blur(12px);box-shadow:0 6px 24px rgba(0,0,0,0.3);overflow:hidden}
+#ws-dd.open{display:block}
+#ws-dd .wsi{padding:10px 14px;display:flex;align-items:center;gap:10px;cursor:pointer;transition:all .12s;font-size:12px;color:#a0aec0;border-left:3px solid transparent}
+#ws-dd .wsi:hover{background:rgba(66,153,225,0.06);color:#e2e8f0;border-left-color:#805ad5}
+#ws-dd .wsi.act{color:#e2e8f0;border-left-color:#805ad5;background:rgba(128,90,213,0.06)}
+#ws-dd .wsi .wdot{width:6px;height:6px;border-radius:50%;background:#4a5568;flex-shrink:0}
+#ws-dd .wsi.act .wdot{background:#805ad5}
+#ws-dd .wsi .wname{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#ws-dd .wsiacts{display:none;gap:4px;align-items:center;margin-left:4px}
+#ws-dd .wsi:hover .wsiacts{display:flex}
+#ws-dd .wsiren,#ws-dd .wsidel{cursor:pointer;font-size:11px;padding:2px 3px;border-radius:3px;transition:background .12s;line-height:1}
+#ws-dd .wsiren:hover{background:rgba(66,153,225,0.2)}
+#ws-dd .wsidel:hover{background:rgba(245,101,101,0.2);color:#fc8181}
+#ws-dd .wssep{border-top:1px solid rgba(15,52,96,0.3);margin:2px 10px}
+#ws-dd .wsman{background:none;border:none;width:100%;padding:10px 14px;color:#63b3ed;cursor:pointer;font-size:11px;transition:all .12s;text-align:left;display:flex;align-items:center;gap:8px}
+#ws-dd .wsman:hover{background:rgba(66,153,225,0.06)}
+#hm-btn{font-size:14px}
+#bm-btn{font-size:16px;color:#718096;transition:all .15s;min-width:28px}
+#bm-btn.bmd{color:#ecc94b}
+#bm-btn.bmd:hover{color:#f6e05e}
+#bm-btn:hover{color:#a0aec0}
+#find{display:none;align-items:center;gap:6px;padding:4px 10px;height:30px;background:rgba(10,10,30,0.85);border-bottom:1px solid rgba(15,52,96,0.3);flex-shrink:0;backdrop-filter:blur(4px)}
+#find.open{display:flex}
+#find input{flex:1;background:rgba(10,41,80,0.5);border:1px solid rgba(26,54,93,0.4);border-radius:5px;padding:3px 10px;color:#e2e8f0;font-size:12px;outline:none;height:22px}
+#find input:focus{border-color:rgba(66,153,225,0.3)}
+#find .fc{font-size:10.5px;color:#718096;white-space:nowrap;min-width:55px;text-align:center}
+#find button{background:rgba(255,255,255,0.04);border:none;color:#8899aa;cursor:pointer;width:22px;height:22px;border-radius:4px;font-size:11px;display:flex;align-items:center;justify-content:center;transition:all .12s}
+#find button:hover{background:rgba(66,153,225,0.12);color:#63b3ed}
+#find .fcx{color:#fc8181}
+#zoom-lbl{font-size:10px;color:#5a6a7a;cursor:pointer;transition:color .15s;margin-right:6px}
+#zoom-lbl:hover{color:#a0aec0}
+#load{display:none;width:14px;height:14px;border:2px solid rgba(66,153,225,0.2);border-top-color:#63b3ed;border-radius:50%;animation:spin .6s linear infinite;flex-shrink:0}
+@keyframes spin{to{transform:rotate(360deg)}}
+.ib{-webkit-app-region:no-drag;background:rgba(255,255,255,0.04);border:none;color:#8899aa;cursor:pointer;width:32px;height:32px;border-radius:8px;font-size:16px;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.ib:hover{background:rgba(66,153,225,0.15);color:#63b3ed;transform:scale(1.05)}
+
+/* Tabs */
+#tabs{display:flex;align-items:center;height:30px;background:rgba(10,10,20,0.6);padding:0 8px;gap:2px;overflow-x:auto;flex-shrink:0;backdrop-filter:blur(8px)}
+#tabs::-webkit-scrollbar{height:2px}
+#tabs::-webkit-scrollbar-thumb{background:rgba(66,153,225,0.2);border-radius:1px}
+.tab{display:flex;align-items:center;gap:6px;padding:4px 12px;background:rgba(26,26,46,0.6);border-radius:6px 6px 0 0;font-size:11px;color:#718096;cursor:pointer;max-width:150px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;border:none;flex-shrink:0;height:26px;transition:all .15s;border:1px solid transparent;border-bottom:none;margin-top:2px}
+.tab.active{background:rgba(22,33,62,0.8);color:#e2e8f0;border-color:rgba(15,52,96,0.4);border-bottom-color:transparent}
+.tab:hover{color:#a0aec0;background:rgba(30,30,56,0.7)}
+.tab .x{font-size:10px;padding:0 2px;border-radius:50%;opacity:0;transition:all .15s;line-height:1}
+.tab:hover .x{opacity:0.5}
+.tab .x:hover{opacity:1;color:#fc8181;background:rgba(252,129,129,0.15)}
+#nt{background:none;border:none;color:#48bb78;cursor:pointer;font-size:18px;padding:0 6px;flex-shrink:0;height:24px;transition:all .15s}
+#nt:hover{color:#68d391;transform:scale(1.1)}
+
+/* Area */
+.area{flex:1;position:relative;background:linear-gradient(135deg,#0f0f1a,#16163a)}
+
+/* Status */
+#status{display:flex;align-items:center;justify-content:space-between;height:24px;background:rgba(10,10,20,0.8);padding:0 14px;font-size:10.5px;color:#4a5568;border-top:1px solid rgba(15,52,96,0.3);flex-shrink:0;backdrop-filter:blur(4px)}
+#su{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;direction:rtl;text-align:left;color:#3a4a5a}
+
+/* Panels */
+.panel{display:none;position:absolute;top:0;right:0;width:400px;height:100%;background:linear-gradient(180deg,rgba(20,20,50,0.97),rgba(22,22,58,0.98));border-left:1px solid rgba(15,52,96,0.4);z-index:10;flex-direction:column;backdrop-filter:blur(12px)}
+.panel.open{display:flex}
+.phdr{display:flex;align-items:center;justify-content:space-between;padding:16px 22px;border-bottom:1px solid rgba(15,52,96,0.3);flex-shrink:0}
+.phdr h3{font-size:14px;font-weight:500;color:#e2e8f0;letter-spacing:0.5px}
+.phdr button{background:rgba(255,255,255,0.04);border:none;color:#8899aa;cursor:pointer;width:28px;height:28px;border-radius:6px;font-size:16px;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.phdr button:hover{background:rgba(229,62,62,0.15);color:#fc8181}
+.pbody{padding:20px 22px;flex:1;overflow-y:auto}
+.pbody::-webkit-scrollbar{width:3px}
+.pbody::-webkit-scrollbar-thumb{background:rgba(66,153,225,0.2);border-radius:2px}
+
+/* Settings */
+.sc{background:rgba(15,52,96,0.15);border:1px solid rgba(26,54,93,0.4);border-radius:12px;padding:20px;margin-bottom:14px;transition:border-color .2s}
+.sc:hover{border-color:rgba(66,153,225,0.2)}
+.sc:last-child{margin-bottom:0}
+.sc h4{font-size:13px;font-weight:500;color:#e2e8f0;margin-bottom:2px}
+.sc .sd{font-size:11px;color:#718096;margin-bottom:14px}
+.si{width:100%;padding:10px 14px;background:rgba(10,41,80,0.5);border:1px solid rgba(26,54,93,0.6);border-radius:8px;color:#e2e8f0;font-size:13px;outline:none;margin-bottom:10px;transition:border-color .2s,box-shadow .2s}
+.si:focus{border-color:rgba(66,153,225,0.4);box-shadow:0 0 0 3px rgba(66,153,225,0.06)}
+.si::placeholder{color:#4a5568}
+.sb{padding:9px 20px;border:none;border-radius:8px;font-size:12px;cursor:pointer;font-weight:500;transition:all .2s;display:inline-block}
+.sbp{background:linear-gradient(135deg,#4299e1,#2b6cb0);color:#fff;box-shadow:0 2px 8px rgba(66,153,225,0.15)}
+.sbp:hover{box-shadow:0 4px 14px rgba(66,153,225,0.25);transform:translateY(-1px)}
+.sbp:disabled{opacity:0.4;cursor:default;transform:none;box-shadow:none}
+.sbg{background:rgba(66,153,225,0.06);color:#63b3ed;border:1px solid rgba(66,153,225,0.12)}
+.sbg:hover{background:rgba(66,153,225,0.14)}
+.smsg{font-size:11px;margin-top:6px;min-height:16px}
+.sogo{color:#68d391}
+.serr{color:#fc8181}
+
+/* Photo */
+.spho{display:flex;align-items:center;gap:18px}
+.sring{width:68px;height:68px;border-radius:50%;background:linear-gradient(135deg,#4299e1,#805ad5);padding:3px;flex-shrink:0;box-shadow:0 0 16px rgba(66,153,225,0.12)}
+.sin{width:100%;height:100%;border-radius:50%;background:#0a2950;overflow:hidden}
+.sin img{width:100%;height:100%;object-fit:cover}
+.sin .sp{width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:#4a5568;font-size:28px}
+.sact{display:flex;flex-direction:column;gap:6px}
+.sch{font-size:11px;color:#fff;cursor:pointer;padding:7px 16px;background:linear-gradient(135deg,#4299e1,#2b6cb0);border:none;border-radius:7px;text-align:center;transition:all .2s;display:inline-block}
+.sch:hover{box-shadow:0 3px 10px rgba(66,153,225,0.2);transform:translateY(-1px)}
+.srm{font-size:10px;color:#fc8181;cursor:pointer;background:none;border:none;padding:2px 0;transition:color .2s;text-align:left}
+.srm:hover{color:#e53e3e}
+#pi{display:none}
+
+/* History */
+#hl{flex:1;overflow-y:auto;padding:0}
+#hl::-webkit-scrollbar{width:3px}
+#hl::-webkit-scrollbar-thumb{background:rgba(66,153,225,0.2);border-radius:2px}
+.hd{padding:16px 22px 6px;font-size:10.5px;color:#68d391;font-weight:600;letter-spacing:0.8px;text-transform:uppercase}
+.hi{display:flex;align-items:center;gap:14px;padding:10px 22px;cursor:pointer;transition:all .12s;border-left:3px solid transparent}
+.hi:hover{background:rgba(66,153,225,0.04);border-left-color:#4299e1}
+.hic{width:34px;height:34px;border-radius:50%;background:rgba(66,153,225,0.08);display:flex;align-items:center;justify-content:center;color:#63b3ed;font-size:14px;flex-shrink:0;transition:all .2s}
+.hi:hover .hic{background:rgba(66,153,225,0.18);transform:scale(1.05)}
+.hb{flex:1;overflow:hidden;padding-right:4px}
+.ht{font-size:13px;color:#e2e8f0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1.4;font-weight:450}
+.hu{font-size:10.5px;color:#5a6a7a;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:1px}
+.him{font-size:10px;color:#3a4a5a;flex-shrink:0;min-width:40px;text-align:right;font-variant-numeric:tabular-nums}
+.he{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:10px;color:#4a5568;padding:20px}
+.he .bi{font-size:42px;opacity:0.35}
+.he .bt{font-size:13px;color:#718096}
+.he .bs{font-size:11px;color:#3a4a5a}
+
+/* Gate */
+.gate{display:none;position:absolute;inset:0;background:rgba(0,0,0,0.6);z-index:20;align-items:center;justify-content:center;backdrop-filter:blur(2px)}
+.gate.open{display:flex}
+.gb{background:linear-gradient(135deg,#1a1a2e,#16213e);border:1px solid rgba(15,52,96,0.5);border-radius:14px;padding:28px;width:290px;text-align:center;box-shadow:0 8px 32px rgba(0,0,0,0.3)}
+.gb h4{font-size:15px;font-weight:500;margin-bottom:4px;color:#e2e8f0}
+.gb p{font-size:11px;color:#718096;margin-bottom:16px}
+.gb input{width:100%;padding:10px 14px;background:rgba(10,41,80,0.6);border:1px solid rgba(26,54,93,0.6);border-radius:8px;color:#e2e8f0;font-size:13px;outline:none;margin-bottom:12px;transition:border-color .2s}
+.gb input:focus{border-color:rgba(66,153,225,0.4)}
+.gm{font-size:11px;min-height:16px}
+</style>
+</head>
+<body>
+<div id="tb">
+  <div id="logo">
+    <img src="logo.png" style="display:none;width:22px;height:22px;border-radius:4px" id="logo-img" onload="this.style.display='inline';document.getElementById('logo-svg').style.display='none'" onerror="this.style.display='none'">
+    <svg id="logo-svg" viewBox="0 0 24 24" fill="none" stroke="#63b3ed" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 3a7 7 0 0 0-7 7c0 3.5 2 6.5 4 8.5a5 5 0 0 0 6 0c2-2 4-5 4-8.5a7 7 0 0 0-7-7z"/>
+      <circle cx="9" cy="10" r="1" fill="#63b3ed" stroke="none"/>
+      <circle cx="15" cy="10" r="1" fill="#63b3ed" stroke="none"/>
+      <path d="M9 14c.5.5 1.5 1 3 1s2.5-.5 3-1" stroke-width="1.2"/>
+    </svg>
+    <span>GhostView</span>
+  </div>
+  <button id="back">&#9664;</button>
+  <button id="fwd">&#9654;</button>
+  <button id="reload">&#x21bb;</button>
+  <div id="load"></div>
+  <button class="ib" id="hm-btn" title="Home">&#127968;</button>
+  <input id="url" placeholder="Search or enter address" spellcheck="false" autofocus>
+  <button class="ib" id="bm-btn" title="Bookmark this page">&#9734;</button>
+  <span id="user-label"></span>
+  <div id="ws-btn">&#9632; <span id="ws-name">Default</span> &#9662;<div id="ws-dd"></div></div>
+  <span id="badge">Ghost Mode</span>
+  <button class="ib" id="hb" title="History (Ctrl+H)">&#128214;</button>
+  <button class="ib" id="sb" title="Settings">&#9881;</button>
+</div>
+<div id="tabs"><button id="nt">+</button></div>
+<div id="find"><input id="fi" placeholder="Find in page" spellcheck="false"><span class="fc" id="fcount"></span><button id="fp">&#9664;</button><button id="fn">&#9654;</button><button id="fc" class="fcx">&#x2715;</button></div>
+<div class="area">
+
+  <!-- History Panel -->
+  <div class="panel" id="hp">
+    <div class="phdr"><h3>History</h3><button id="ch">&#x2715;</button></div>
+    <div id="hl"></div>
+    <div class="gate" id="gate">
+      <div class="gb">
+        <h4>Password Required</h4>
+        <p>Enter your password to view your browsing history</p>
+        <input type="password" id="gp" placeholder="Your password">
+        <div class="gm" id="gm"></div>
+        <div style="display:flex;gap:10px;margin-top:4px">
+          <button id="gc" style="flex:1;padding:8px;border:none;border-radius:8px;background:rgba(255,255,255,0.06);color:#8899aa;cursor:pointer;font-size:12px;transition:all .15s">Cancel</button>
+          <button id="gok" style="flex:1;padding:8px;border:none;border-radius:8px;background:linear-gradient(135deg,#4299e1,#2b6cb0);color:#fff;cursor:pointer;font-size:12px;transition:all .15s;box-shadow:0 2px 8px rgba(66,153,225,0.15)">Confirm</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Settings Panel -->
+  <div class="panel" id="sp">
+    <div class="phdr"><h3>Settings</h3><button id="cs">&#x2715;</button></div>
+    <div class="pbody">
+      <div class="sc">
+        <h4>Profile Photo</h4>
+        <div class="sd">Personalize your GhostView profile</div>
+        <div class="spho">
+          <div class="sring"><div class="sin"><div class="sp" id="sph">&#128100;</div><img id="simg" style="display:none"></div></div>
+          <div class="sact">
+            <label class="sch" for="pi">Choose Photo</label>
+            <input type="file" id="pi" accept="image/png,image/jpeg,image/gif,image/webp">
+            <button class="srm" id="rm" style="display:none">Remove photo</button>
+            <div id="pm" class="smsg"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sc">
+        <h4>Change Password</h4>
+        <div class="sd">Update your account password</div>
+        <input type="password" class="si" id="cpo" placeholder="Current password">
+        <input type="password" class="si" id="cpn" placeholder="New password (min 3 chars)">
+        <input type="password" class="si" id="cpn2" placeholder="Confirm new password">
+        <button class="sb sbp" id="cpb">Update Password</button>
+        <div id="cpm" class="smsg"></div>
+      </div>
+      <div class="sc">
+        <h4>Browsing History</h4>
+        <div class="sd">Re-enter your password to access your browsing history</div>
+        <button class="sb sbg" id="shb">&#128214; View History</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+<div id="status"><span id="st">Ghost Mode Active</span><span style="display:flex;align-items:center;gap:8px"><span id="zoom-lbl" title="Reset zoom (Ctrl+0)">100%</span><span id="su"></span></span></div>
+
+<script>
+const g = window.ghost;
+const url = document.getElementById('url');
+const back = document.getElementById('back');
+const fwd = document.getElementById('fwd');
+const reload = document.getElementById('reload');
+const load = document.getElementById('load');
+const tabsEl = document.getElementById('tabs');
+const newtab = document.getElementById('nt');
+const stext = document.getElementById('st');
+const surl = document.getElementById('su');
+const userLabel = document.getElementById('user-label');
+const hp = document.getElementById('hp');
+const hl = document.getElementById('hl');
+const hb = document.getElementById('hb');
+const ch = document.getElementById('ch');
+const sp = document.getElementById('sp');
+const sb = document.getElementById('sb');
+const cs = document.getElementById('cs');
+const gate = document.getElementById('gate');
+const gp = document.getElementById('gp');
+const gm = document.getElementById('gm');
+const gc = document.getElementById('gc');
+const gok = document.getElementById('gok');
+const pi = document.getElementById('pi');
+const simg = document.getElementById('simg');
+const sph = document.getElementById('sph');
+const pm = document.getElementById('pm');
+const rm = document.getElementById('rm');
+const cpo = document.getElementById('cpo');
+const cpn = document.getElementById('cpn');
+const cpn2 = document.getElementById('cpn2');
+const cpb = document.getElementById('cpb');
+const cpm = document.getElementById('cpm');
+const shb = document.getElementById('shb');
+
+let tlist = [], active = null;
+
+function render() {
+  tabsEl.querySelectorAll('.tab').forEach(e => e.remove());
+  tlist.forEach(t => {
+    const el = document.createElement('div');
+    el.className = 'tab' + (t.id === active ? ' active' : '');
+    el.textContent = (t.title || t.url || 'New Tab').substring(0, 22);
+    el.title = t.url || t.title || '';
+    if (tlist.length > 1) {
+      const x = document.createElement('span');
+      x.className = 'x'; x.textContent = '\u00D7';
+      x.onclick = (e) => { e.stopPropagation(); g.closeTab(t.id); }; el.appendChild(x);
+    }
+    el.onclick = () => g.activateTab(t.id);
+    el.onauxclick = (e) => { if (e.button === 1) { e.preventDefault(); if (tlist.length > 1) g.closeTab(t.id); } };
+    tabsEl.insertBefore(el, newtab);
+  });
+}
+
+function setUrl(v) { url.value = v === 'about:blank' ? '' : (v || ''); }
+
+function closePanels() {
+  const h = hp.classList.contains('open'), s = sp.classList.contains('open');
+  hp.classList.remove('open'); sp.classList.remove('open');
+  if (h || s) g.panelToggle(false);
+}
+
+function toggleH() {
+  sp.classList.remove('open');
+  const o = hp.classList.toggle('open'); g.panelToggle(o);
+  if (o) { hl.innerHTML = '<div class="he"><div class="bi">&#128273;</div><div class="bt">Enter your password</div><div class="bs">to view browsing history</div></div>'; showGate(); }
+}
+
+function toggleS() {
+  hp.classList.remove('open');
+  const o = sp.classList.toggle('open'); g.panelToggle(o);
+  if (o) loadSett();
+}
+
+function loadSett() {
+  try {
+    g.getUser().then(u => {
+      if (u && u.photo) { simg.src = u.photo; simg.style.display = 'block'; sph.style.display = 'none'; rm.style.display = 'inline'; }
+      else { simg.style.display = 'none'; sph.style.display = 'flex'; rm.style.display = 'none'; }
+    });
+  } catch(e) {}
+}
+
+function showGate() { gate.classList.add('open'); gp.value = ''; gm.textContent = ''; gp.focus(); }
+function hideGate() { gate.classList.remove('open'); }
+
+gok.onclick = async () => {
+  const pw = gp.value;
+  if (!pw) { gm.textContent = 'Enter your password.'; return; }
+  const ok = await g.verifyPassword(pw);
+  if (ok) { hideGate(); hl.innerHTML = ''; const items = await g.getHistory(); renderH(items); }
+  else { gm.textContent = 'Incorrect password.'; }
+};
+gc.onclick = hideGate;
+gp.addEventListener('keydown', (e) => { if (e.key === 'Enter') gok.click(); });
+
+function renderH(items) {
+  hl.innerHTML = '';
+  if (!items || items.length === 0) { hl.innerHTML = '<div class="he"><div class="bi">&#128214;</div><div class="bt">No history yet</div><div class="bs">Start browsing to see your history here</div></div>'; return; }
+  const gr = {};
+  items.forEach(h => { const d = new Date(h.timestamp); const k = d.toLocaleDateString([], { year:'numeric', month:'long', day:'numeric' }); if (!gr[k]) gr[k] = []; gr[k].push(h); });
+  const td = new Date().toLocaleDateString([], { year:'numeric', month:'long', day:'numeric' });
+  const yd = new Date(Date.now()-86400000).toLocaleDateString([], { year:'numeric', month:'long', day:'numeric' });
+  Object.keys(gr).forEach(d => {
+    const el = document.createElement('div'); el.className = 'hd'; el.textContent = d === td ? 'Today' : d === yd ? 'Yesterday' : d; hl.appendChild(el);
+    gr[d].forEach(h => {
+      const t = new Date(h.timestamp); const ti = t.toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' });
+      const e = document.createElement('div'); e.className = 'hi';
+      e.innerHTML = '<div class="hic">&#128279;</div><div class="hb"><div class="ht">'+esc(h.title||h.url)+'</div><div class="hu">'+esc(h.url)+'</div></div><div class="him">'+ti+'</div>';
+      e.onclick = () => { g.navigate(h.url); closePanels(); }; hl.appendChild(e);
+    });
+  });
+}
+
+function esc(s) { if (!s) return ''; const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+
+pi.onchange = () => {
+  const f = pi.files[0]; if (!f) return;
+  if (f.size > 2*1024*1024) { pm.textContent = 'Image too large (max 2MB).'; pm.className = 'smsg serr'; return; }
+  const r = new FileReader();
+  r.onload = async (e) => {
+    const b = e.target.result; const res = await g.uploadPhoto(b);
+    if (res.ok) { simg.src = b; simg.style.display = 'block'; sph.style.display = 'none'; rm.style.display = 'inline'; pm.textContent = 'Photo updated!'; pm.className = 'smsg sogo'; }
+    else { pm.textContent = 'Failed.'; pm.className = 'smsg serr'; }
+  };
+  r.readAsDataURL(f);
+};
+rm.onclick = async () => {
+  const res = await g.uploadPhoto(null);
+  if (res.ok) { simg.style.display = 'none'; sph.style.display = 'flex'; rm.style.display = 'none'; pm.textContent = 'Photo removed.'; pm.className = 'smsg sogo'; }
+};
+cpb.onclick = async () => {
+  const o = cpo.value, p1 = cpn.value, p2 = cpn2.value;
+  cpm.className = 'smsg'; cpm.textContent = '';
+  if (!o || !p1 || !p2) { cpm.textContent = 'Fill in all fields.'; cpm.className = 'smsg serr'; return; }
+  if (p1 !== p2) { cpm.textContent = 'Passwords do not match.'; cpm.className = 'smsg serr'; return; }
+  if (p1.length < 3) { cpm.textContent = 'Min 3 characters.'; cpm.className = 'smsg serr'; return; }
+  cpb.disabled = true; cpb.textContent = 'Updating...';
+  const res = await g.changePassword(o, p1);
+  cpb.disabled = false; cpb.textContent = 'Update Password';
+  if (res.ok) { cpm.textContent = 'Password changed!'; cpm.className = 'smsg sogo'; cpo.value = ''; cpn.value = ''; cpn2.value = ''; }
+  else { cpm.textContent = res.error; cpm.className = 'smsg serr'; }
+};
+shb.onclick = () => {
+  sp.classList.remove('open'); g.panelToggle(false);
+  setTimeout(() => { hp.classList.add('open'); g.panelToggle(true); hl.innerHTML = '<div class="he"><div class="bi">&#128273;</div><div class="bt">Enter your password</div><div class="bs">to view browsing history</div></div>'; showGate(); }, 200);
+};
+
+g.onTabUpdated((d) => {
+  const t = tlist.find(x => x.id === d.id);
+  if (t) { if (d.title !== undefined) t.title = d.title; if (d.url !== undefined) t.url = d.url; }
+  if (d.id === active && d.url) { setUrl(d.url); checkBookmark(d.url); } render();
+});
+g.onTabLoading((d) => {
+  load.style.display = d.loading ? 'block' : 'none';
+  reload.innerHTML = d.loading ? '\u2715' : '\u21bb';
+  stext.textContent = d.loading ? 'Loading...' : 'Ghost Mode Active';
+});
+g.onTabActivated((d) => {
+  active = d.id; const t = tlist.find(x => x.id === d.id);
+  if (t) { t.title = d.title; t.url = d.url; } setUrl(d.url); render(); checkBookmark(d.url);
+});
+g.onTabsList((list) => {
+  tlist = list;
+  if (active && !tlist.find(t => t.id === active)) active = tlist.length > 0 ? tlist[0].id : null;
+  render(); const t = tlist.find(x => x.id === active); if (t) { setUrl(t.url); checkBookmark(t.url); }
+});
+g.onStatusUrl((u) => { surl.textContent = u || ''; });
+g.onShowHistory(() => toggleH());
+
+url.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') {
+    e.preventDefault(); let input = url.value.trim(); if (!input) return;
+    if (!/^https?:\/\//i.test(input)) {
+      if (/^[\w.-]+\.[a-z]{2,}/i.test(input)) input = 'https://' + input;
+      else input = 'https://www.google.com/search?q=' + encodeURIComponent(input);
+    }
+    g.navigate(input);
+  }
+});
+back.onclick = () => g.goBack();
+fwd.onclick = () => g.goForward();
+reload.onclick = () => { if (reload.innerHTML.includes('\u2715')) g.stop(); else g.reload(); };
+newtab.onclick = () => g.newTab();
+hb.onclick = toggleH;
+ch.onclick = () => { hp.classList.remove('open'); g.panelToggle(false); };
+sb.onclick = toggleS;
+cs.onclick = () => { sp.classList.remove('open'); g.panelToggle(false); };
+
+// ── Find in Page ──
+const find = document.getElementById('find');
+const fi = document.getElementById('fi');
+const fp = document.getElementById('fp');
+const fn = document.getElementById('fn');
+const fc = document.getElementById('fc');
+const fcount = document.getElementById('fcount');
+let findOpen = false;
+
+fc.onclick = () => { find.classList.remove('open'); findOpen = false; fi.value = ''; g.findStop(); };
+fp.onclick = () => { if (fi.value.trim()) g.findNext(fi.value); };
+fn.onclick = () => { if (fi.value.trim()) g.findStart(fi.value); };
+fi.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') { e.preventDefault(); if (fi.value.trim()) { if (e.shiftKey) g.findNext(fi.value); else g.findStart(fi.value); } }
+  if (e.key === 'Escape') { fc.click(); }
+});
+
+// ── Bookmarks ──
+const bmBtn = document.getElementById('bm-btn');
+let curUrl = '';
+
+bmBtn.onclick = async () => {
+  const t = tlist.find(x => x.id === active);
+  if (!t) return;
+  const url = t.url || tlist[0]?.url;
+  const title = t.title || '';
+  if (!url || url === 'about:blank') return;
+  const bookmarked = await g.isBookmarked(url);
+  if (bookmarked) { await g.removeBookmark(url); bmBtn.classList.remove('bmd'); }
+  else { await g.addBookmark(url, title); bmBtn.classList.add('bmd'); }
+};
+
+async function checkBookmark(url) {
+  if (!url || url === 'about:blank') { bmBtn.classList.remove('bmd'); return; }
+  const b = await g.isBookmarked(url);
+  bmBtn.classList.toggle('bmd', b);
+}
+
+// ── Home ──
+document.getElementById('hm-btn').onclick = () => g.goHome();
+
+// ── Navigation State ──
+g.onNavState((d) => {
+  back.disabled = !d.canGoBack;
+  fwd.disabled = !d.canGoForward;
+});
+
+// ── Zoom ──
+const zoomLbl = document.getElementById('zoom-lbl');
+let zoomLevel = 0;
+function updateZoom() { zoomLbl.textContent = Math.round(100 * Math.pow(1.2, zoomLevel)) + '%'; }
+
+// ── Keyboard ──
+document.addEventListener('keydown', (e) => {
+  if (e.ctrlKey && e.key === 't') { e.preventDefault(); g.newTab(); }
+  if (e.ctrlKey && e.key === 'w') { e.preventDefault(); if (tlist.length > 1) g.closeTab(active); }
+  if ((e.ctrlKey && e.key === 'r') || e.key === 'F5') { e.preventDefault(); g.reload(); }
+  if (e.ctrlKey && e.key === 'l') { e.preventDefault(); url.select(); }
+  if (e.ctrlKey && e.key === 'h') { e.preventDefault(); toggleH(); }
+  if (e.ctrlKey && e.key === 'f') { e.preventDefault(); find.classList.toggle('open'); findOpen = find.classList.contains('open'); if (findOpen) fi.focus(); else g.findStop(); }
+  if (e.ctrlKey && (e.key === '=' || e.key === '+')) { e.preventDefault(); zoomLevel = Math.min(10, zoomLevel + 1); updateZoom(); g.zoomIn(); }
+  if (e.ctrlKey && e.key === '-') { e.preventDefault(); zoomLevel = Math.max(-5, zoomLevel - 1); updateZoom(); g.zoomOut(); }
+  if ((e.ctrlKey && e.key === '0') || e.key === 'Escape') { if (e.key === 'Escape') { closePanels(); hideGate(); if (findOpen) fc.click(); } else { e.preventDefault(); zoomLevel = 0; updateZoom(); g.zoomReset(); } }
+  if (e.key === 'F11') { e.preventDefault(); g.toggleFullscreen(); }
+  if (e.ctrlKey && e.key === 'Tab') { e.preventDefault(); if (tlist.length > 1) { const idx = tlist.findIndex(t => t.id === active); const next = tlist[(idx + 1) % tlist.length]; g.activateTab(next.id); } }
+  if (e.ctrlKey && e.key === 'd') { e.preventDefault(); bmBtn.click(); }
+});
+// Also handle F5 as reload
+document.addEventListener('keyup', (e) => { if (e.key === 'F5') e.preventDefault(); });
+window.addEventListener('resize', () => g.resizeContent());
+
+// Workspace Switcher
+const wsBtn = document.getElementById('ws-btn');
+const wsName = document.getElementById('ws-name');
+const wsDD = document.getElementById('ws-dd');
+
+function toggleWS(e) {
+  e.stopPropagation();
+  wsDD.classList.toggle('open');
+  if (wsDD.classList.contains('open')) renderWSDD();
+}
+
+async function renderWSDD() {
+  wsDD.innerHTML = '<div style="padding:12px 14px;font-size:10.5px;color:#5a6a7a">Loading...</div>';
+  try {
+    const list = await g.getWorkspaces();
+    const cur = wsName.textContent;
+    wsDD.innerHTML = '';
+    if (!list || list.length === 0) {
+      wsDD.innerHTML = '<div style="padding:12px 14px;font-size:12px;color:#718096">No workspaces</div>';
+      return;
+    }
+    list.forEach(w => {
+      const isCur = w.name === cur;
+      const el = document.createElement('div'); el.className = 'wsi' + (isCur ? ' act' : '');
+      el.innerHTML = '<div class="wdot"></div><div class="wname">'+esc(w.name)+'</div>'
+        + '<div class="wsiacts">'
+        + '<span class="wsiren" title="Rename">\u270F\uFE0F</span>'
+        + '<span class="wsidel" title="Delete">\u2716</span>'
+        + '</div>';
+      const nameEl = el.querySelector('.wname');
+      el.querySelector('.wsiren').onclick = (e) => {
+        e.stopPropagation(); wsDD.classList.remove('open');
+        const nn = prompt('Rename workspace "'+w.name+'":', w.name);
+        if (nn && nn.trim() && nn.trim() !== w.name) g.renameWorkspace(w.id, nn.trim());
+      };
+      el.querySelector('.wsidel').onclick = (e) => {
+        e.stopPropagation(); wsDD.classList.remove('open');
+        if (isCur) { alert('Cannot delete the active workspace. Switch first.'); return; }
+        if (confirm('Delete workspace "'+w.name+'"? This cannot be undone.')) g.deleteWorkspace(w.id);
+      };
+      el.onclick = (e) => {
+        if (e.target.closest('.wsiacts')) return;
+        e.stopPropagation(); wsDD.classList.remove('open');
+        if (isCur) return;
+        g.switchWorkspace(w.id);
+      };
+      wsDD.appendChild(el);
+    });
+    const sep = document.createElement('div'); sep.className = 'wssep'; wsDD.appendChild(sep);
+    const man = document.createElement('button'); man.className = 'wsman'; man.innerHTML = '\u2699\uFE0F Manage Workspaces';
+    man.onclick = (e) => { e.stopPropagation(); window.location.href = 'workspace.html'; };
+    wsDD.appendChild(man);
+  } catch(e) {
+    wsDD.innerHTML = '<div style="padding:12px 14px;font-size:12px;color:#fc8181">Failed to load workspaces</div>';
+  }
+}
+
+wsBtn.onclick = toggleWS;
+document.addEventListener('click', (e) => { if (!wsBtn.contains(e.target)) wsDD.classList.remove('open'); });
+
+g.onWorkspaceSwitched((d) => {
+  wsName.textContent = d.name;
+});
+
+g.onReturnToLogin(async () => {
+  await g.logout();
+  window.location.href = 'login.html';
+});
+g.onReturnToWorkspaces(async () => {
+  await g.cleanupTabs();
+  window.location.href = 'workspace.html';
+});
+
+zoomLbl.onclick = () => { zoomLevel = 0; updateZoom(); g.zoomReset(); };
+
+g.getUser().then(u => { if (u) userLabel.textContent = u.pseudo; });
+g.getTabs().then(async list => {
+  tlist = list; if (tlist.length > 0) { active = tlist[0].id; setUrl(tlist[0].url); checkBookmark(tlist[0].url); } render();
+  try {
+    const w = await g.getActiveWorkspace();
+    if (w) wsName.textContent = w.name;
+  } catch(e) {}
+});
+
+['mousemove','mousedown','keydown','click','scroll','touchstart','wheel'].forEach(evt => {
+  document.addEventListener(evt, () => g.resetIdleTimer(), { passive: true });
+});
+</script>
+</body>
+</html>
