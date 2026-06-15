@@ -280,10 +280,11 @@ function contentBounds() {
   return { x: 0, y: TOP, width: b.width - pw, height: b.height - TOP - BOTTOM };
 }
 
-function addTab(url) {
+function addTab(url, partition) {
   const id = idCounter++;
+  const wsPartition = partition || (currentWorkspace ? 'persist:ws_' + currentWorkspace : undefined);
   const view = new WebContentsView({
-    webPreferences: { sandbox: true, spellcheck: false },
+    webPreferences: { sandbox: true, spellcheck: false, partition: wsPartition },
   });
 
   const ses = view.webContents.session;
@@ -781,7 +782,13 @@ app.on('window-all-closed', () => { if (process.platform !== 'darwin') app.quit(
 app.on('before-quit', async () => {
   saveUserTabs();
   if (autoSaveInterval) { clearInterval(autoSaveInterval); autoSaveInterval = null; }
-  const ses = session.defaultSession;
-  await ses.clearCache();
-  await ses.clearStorageData();
+  await session.defaultSession.clearCache();
+  await session.defaultSession.clearStorageData();
+  if (currentWorkspace) {
+    try {
+      const ws = session.fromPartition('persist:ws_' + currentWorkspace);
+      await ws.clearCache();
+      await ws.clearStorageData();
+    } catch(e) {}
+  }
 });
